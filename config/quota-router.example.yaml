@@ -1,0 +1,71 @@
+# QuotaRouterConfig v0 example — fake refs only. Never put plaintext keys here.
+# Real material lives in the host credentials store (ref names only below).
+
+version: 0
+enabled: true
+
+providers:
+  - id: example-primary
+    displayName: Example primary (OpenAI-compat)
+    routeHint: openai-compat
+  - id: example-research
+    displayName: Example research provider
+
+accounts:
+  - id: acct_demo_a
+    providerId: example-primary
+    credentialRef: cred_ref_demo_a
+    label: Demo account A
+    enabled: true
+  - id: acct_demo_b
+    providerId: example-primary
+    credentialRef: cred_ref_demo_b
+    label: Demo account B
+    enabled: true
+  - id: acct_demo_research
+    providerId: example-research
+    credentialRef: cred_ref_demo_research
+    label: Demo research
+    enabled: true
+
+pools:
+  - id: pool_primary
+    providerId: example-primary
+    accountIds:
+      - acct_demo_a
+      - acct_demo_b
+    cooldownMs: 60000
+    rotateOn:
+      - type: http_status
+        status: 429
+      - type: llm_error_code
+        code: RATE_LIMIT
+  - id: pool_research
+    providerId: example-research
+    accountIds:
+      - acct_demo_research
+    cooldownMs: 60000
+    rotateOn:
+      - type: http_status
+        status: 429
+
+plans:
+  - id: coding
+    displayName: Coding
+    poolId: pool_primary
+    modelPin:
+      providerId: example-primary
+      modelId: example-coding-model
+    enabled: true
+  - id: research
+    displayName: Research
+    poolId: pool_research
+    modelPin:
+      providerId: example-research
+      modelId: example-research-model
+    fallbackPoolIds: []
+    enabled: true
+
+defaultPlanId: coding
+defaultCooldownMs: 60000
+stayInPoolUnlessFallbackEnabled: true

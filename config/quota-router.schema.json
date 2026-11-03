@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kinfx.local/schemas/quota-router/v0.json",
+  "title": "QuotaRouterConfig v0",
+  "description": "AccountPool + Plan contract. Credential refs only — never plaintext keys. Aligns with kinfx-dsh-quota-router-spec-v0 §4–§6.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "enabled",
+    "providers",
+    "accounts",
+    "pools",
+    "plans",
+    "defaultCooldownMs",
+    "stayInPoolUnlessFallbackEnabled"
+  ],
+  "properties": {
+    "version": { "type": "integer", "const": 0 },
+    "enabled": { "type": "boolean" },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "displayName"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "routeHint": { "type": "string" }
+        }
+      }
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "providerId", "credentialRef", "enabled"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "providerId": { "type": "string", "minLength": 1 },
+          "credentialRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Host credentials ref name only; not a key body."
+          },
+          "label": { "type": "string" },
+          "enabled": { "type": "boolean" },
+          "defaultModelId": { "type": "string" }
+        }
+      }
+    },
+    "pools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "providerId", "accountIds", "cooldownMs", "rotateOn"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "providerId": { "type": "string", "minLength": 1 },
+          "accountIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1
+          },
+          "currentAccountId": { "type": "string" },
+          "cooldownMs": { "type": "integer", "minimum": 0 },
+          "rotateOn": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "code"],
+                  "properties": {
+                    "type": { "const": "llm_error_code" },
+                    "code": { "type": "string", "minLength": 1 }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "status"],
+                  "properties": {
+                    "type": { "const": "http_status" },
+                    "status": { "type": "integer", "minimum": 100, "maximum": 599 }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "pattern"],
+                  "properties": {
+                    "type": { "const": "message_regex" },
+                    "pattern": { "type": "string", "minLength": 1 }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "plans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "displayName", "poolId", "modelPin", "enabled"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "poolId": { "type": "string", "minLength": 1 },
+          "modelPin": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["providerId", "modelId"],
+            "properties": {
+              "providerId": { "type": "string", "minLength": 1 },
+              "modelId": { "type": "string", "minLength": 1 }
+            }
+          },
+          "fallbackPoolIds": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "llmFallbackChainId": { "type": "string" },
+          "enabled": { "type": "boolean" }
+        }
+      }
+    },
+    "defaultPlanId": { "type": "string" },
+    "defaultCooldownMs": { "type": "integer", "minimum": 0, "description": "Global default; pools may override. Spec §6 default 60000." },
+    "stayInPoolUnlessFallbackEnabled": {
+      "type": "boolean",
+      "description": "true = stay in primary pool unless fallback explicitly enabled (safer default)."
+    }
+  }
+}
