@@ -1,5 +1,8 @@
 # agent-quota-router
 
+
+**[☕ Buy Me a Coffee](https://buymeacoffee.com/kinfxhk)** · [GitHub Sponsors](https://github.com/sponsors/Kinfxhk)
+
 **狀態：M0 scaffold（組裝指南＋設定契約＋純 TypeScript 選帳 helpers）——不是生產完整路由器產品。**
 
 KINFX 的 **L2 額度／帳號池組裝層**：用 **credential ref**（不是明文 key）組成 AccountPool，按 **Plan** 套用 modelPin，並在 cooldown 下揀下一個帳。  
